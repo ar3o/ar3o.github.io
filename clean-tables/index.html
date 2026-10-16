@@ -27,6 +27,8 @@
 
 <p align="center"><b>An automated pipeline that turns unlabelled phone videos of a person doing a task into robot policies trained in simulation.</b></p>
 
+<p align="center">My submission for the <b>Humanoid Robot Learning internship challenge</b>, October 2026.</p>
+
 <h2>Why I built this</h2>
 <p>My idea for this project was to build something that would actually matter for the way physical AI companies are trying to train robots right now. In my own past projects I have worked with reinforcement learning and with LLM planning for robot arms, and the same problem kept coming up: every new task needs a person to build the scene, write and tune a reward, and babysit the training. It works, but it stops at one task, because the next task needs someone to do all of it again, and that just doesn't scale to the amount of data you need to train a generalist humanoid.</p>
 <p>So I wanted to attempt something that I knew would be a lot harder, but more rewarding and with more open problems in it: a fully automated pipeline with no human labelling and no hand tuning per task. You put in egocentric videos of people doing things, which companies are now collecting in huge amounts, and you get out policies in simulation that can adapt to new configurations of that task. If that works, every new hour of human video becomes training data for robots without anyone writing task-specific code, and the cost of teaching a robot a new task drops to the cost of recording someone doing it.</p>
@@ -132,24 +134,24 @@
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Held-out twins</th>
-<th style="text-align: center;">Ours</th>
-<th style="text-align: center;">NVIDIA lift policy + greedy</th>
-<th style="text-align: center;">Arm contact (steps/episode), ours vs baseline</th>
+<th align="left">Held-out twins</th>
+<th align="center">Ours</th>
+<th align="center">NVIDIA lift policy + greedy</th>
+<th align="center">Arm contact (steps/episode), ours vs baseline</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">Fruit, 4 twins (704 fruit)</td>
-<td style="text-align: center;"><strong>20.2%</strong> [17.4, 23.3]</td>
-<td style="text-align: center;">14.6% [12.2, 17.4]</td>
-<td style="text-align: center;">380 vs 551</td>
+<td align="left">Fruit, 4 twins (704 fruit)</td>
+<td align="center"><strong>20.2%</strong> [17.4, 23.3]</td>
+<td align="center">14.6% [12.2, 17.4]</td>
+<td align="center">380 vs 551</td>
 </tr>
 <tr>
-<td style="text-align: left;">Tools, 3 twins (320 tools)</td>
-<td style="text-align: center;"><strong>18.8%</strong> [14.9, 23.4]</td>
-<td style="text-align: center;">10.6% [7.7, 14.5]</td>
-<td style="text-align: center;">516 vs 719</td>
+<td align="left">Tools, 3 twins (320 tools)</td>
+<td align="center"><strong>18.8%</strong> [14.9, 23.4]</td>
+<td align="center">10.6% [7.7, 14.5]</td>
+<td align="center">516 vs 719</td>
 </tr>
 </tbody>
 </table>
@@ -182,81 +184,81 @@ docker/         container definitions for the simulation and vision environments
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Idea</th>
-<th style="text-align: left;">Where it's from</th>
-<th style="text-align: left;">Used for</th>
+<th align="left">Idea</th>
+<th align="left">Where it's from</th>
+<th align="left">Used for</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">Self-supervised video features</td>
-<td style="text-align: left;">V-JEPA 2 (Assran et al., 2025)</td>
-<td style="text-align: left;">world-model video input and next-latent target</td>
+<td align="left">Self-supervised video features</td>
+<td align="left">V-JEPA 2 (Assran et al., 2025)</td>
+<td align="left">world-model video input and next-latent target</td>
 </tr>
 <tr>
-<td style="text-align: left;">Flow matching</td>
-<td style="text-align: left;">Lipman et al., 2023</td>
-<td style="text-align: left;">imagined carry paths</td>
+<td align="left">Flow matching</td>
+<td align="left">Lipman et al., 2023</td>
+<td align="left">imagined carry paths</td>
 </tr>
 <tr>
-<td style="text-align: left;">Mixture density networks</td>
-<td style="text-align: left;">Bishop, 1994</td>
-<td style="text-align: left;">end-position distribution</td>
+<td align="left">Mixture density networks</td>
+<td align="left">Bishop, 1994</td>
+<td align="left">end-position distribution</td>
 </tr>
 <tr>
-<td style="text-align: left;">Time-reversed negatives for progress</td>
-<td style="text-align: left;">Arrow of time (Wei et al., 2018); Rank2Reward (Yang et al., 2024)</td>
-<td style="text-align: left;">task-progress head</td>
+<td align="left">Time-reversed negatives for progress</td>
+<td align="left">Arrow of time (Wei et al., 2018); Rank2Reward (Yang et al., 2024)</td>
+<td align="left">task-progress head</td>
 </tr>
 <tr>
-<td style="text-align: left;">Modality dropout</td>
-<td style="text-align: left;">ModDrop (Neverova et al., 2015)</td>
-<td style="text-align: left;">running the world model on 3D alone</td>
+<td align="left">Modality dropout</td>
+<td align="left">ModDrop (Neverova et al., 2015)</td>
+<td align="left">running the world model on 3D alone</td>
 </tr>
 <tr>
-<td style="text-align: left;">Deep ensembles</td>
-<td style="text-align: left;">Lakshminarayanan et al., 2017</td>
-<td style="text-align: left;">three-seed ensemble</td>
+<td align="left">Deep ensembles</td>
+<td align="left">Lakshminarayanan et al., 2017</td>
+<td align="left">three-seed ensemble</td>
 </tr>
 <tr>
-<td style="text-align: left;">Reward-weighted regression</td>
-<td style="text-align: left;">Peters &amp; Schaal, 2007</td>
-<td style="text-align: left;">physics feedback</td>
+<td align="left">Reward-weighted regression</td>
+<td align="left">Peters &amp; Schaal, 2007</td>
+<td align="left">physics feedback</td>
 </tr>
 <tr>
-<td style="text-align: left;">Zero-initialised input layers</td>
-<td style="text-align: left;">ControlNet (Zhang et al., 2023)</td>
-<td style="text-align: left;">adding inputs to NVIDIA's policy</td>
+<td align="left">Zero-initialised input layers</td>
+<td align="left">ControlNet (Zhang et al., 2023)</td>
+<td align="left">adding inputs to NVIDIA's policy</td>
 </tr>
 <tr>
-<td style="text-align: left;">KL penalty to a reference policy</td>
-<td style="text-align: left;">RLHF fine-tuning (Ouyang et al., 2022)</td>
-<td style="text-align: left;">keeping the grasp while fine-tuning</td>
+<td align="left">KL penalty to a reference policy</td>
+<td align="left">RLHF fine-tuning (Ouyang et al., 2022)</td>
+<td align="left">keeping the grasp while fine-tuning</td>
 </tr>
 <tr>
-<td style="text-align: left;">Each hand observes the other</td>
-<td style="text-align: left;">Bi-DexHands (Chen et al., 2022)</td>
-<td style="text-align: left;">two-arm coordination</td>
+<td align="left">Each hand observes the other</td>
+<td align="left">Bi-DexHands (Chen et al., 2022)</td>
+<td align="left">two-arm coordination</td>
 </tr>
 <tr>
-<td style="text-align: left;">Centralised critic</td>
-<td style="text-align: left;">MAPPO (Yu et al., 2022)</td>
-<td style="text-align: left;">one critic for both arms</td>
+<td align="left">Centralised critic</td>
+<td align="left">MAPPO (Yu et al., 2022)</td>
+<td align="left">one critic for both arms</td>
 </tr>
 <tr>
-<td style="text-align: left;">Pointer attention</td>
-<td style="text-align: left;">Pointer Networks (Vinyals et al., 2015)</td>
-<td style="text-align: left;">assigning objects to arms</td>
+<td align="left">Pointer attention</td>
+<td align="left">Pointer Networks (Vinyals et al., 2015)</td>
+<td align="left">assigning objects to arms</td>
 </tr>
 <tr>
-<td style="text-align: left;">Potential-based shaping</td>
-<td style="text-align: left;">Ng et al., 1999</td>
-<td style="text-align: left;">path-progress reward</td>
+<td align="left">Potential-based shaping</td>
+<td align="left">Ng et al., 1999</td>
+<td align="left">path-progress reward</td>
 </tr>
 <tr>
-<td style="text-align: left;">Domain randomisation</td>
-<td style="text-align: left;">Tobin et al., 2017</td>
-<td style="text-align: left;">layouts, masses, friction</td>
+<td align="left">Domain randomisation</td>
+<td align="left">Tobin et al., 2017</td>
+<td align="left">layouts, masses, friction</td>
 </tr>
 </tbody>
 </table>
@@ -265,38 +267,38 @@ docker/         container definitions for the simulation and vision environments
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Component</th>
-<th style="text-align: left;">Used for</th>
+<th align="left">Component</th>
+<th align="left">Used for</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">Isaac Sim 6.1 and Isaac Lab 3 (NVIDIA)</td>
-<td style="text-align: left;">twins, physics, rendering, RL environments</td>
+<td align="left">Isaac Sim 6.1 and Isaac Lab 3 (NVIDIA)</td>
+<td align="left">twins, physics, rendering, RL environments</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>Isaac-Lift-KukaAllegro</code> policy (NVIDIA)</td>
-<td style="text-align: left;">starting weights for each arm</td>
+<td align="left"><code>Isaac-Lift-KukaAllegro</code> policy (NVIDIA)</td>
+<td align="left">starting weights for each arm</td>
 </tr>
 <tr>
-<td style="text-align: left;">V-JEPA 2, SAM 3, DINOv2 (Meta)</td>
-<td style="text-align: left;">video features, masks and tracking, appearance</td>
+<td align="left">V-JEPA 2, SAM 3, DINOv2 (Meta)</td>
+<td align="left">video features, masks and tracking, appearance</td>
 </tr>
 <tr>
-<td style="text-align: left;">MoGe-3 (Microsoft)</td>
-<td style="text-align: left;">metric depth</td>
+<td align="left">MoGe-3 (Microsoft)</td>
+<td align="left">metric depth</td>
 </tr>
 <tr>
-<td style="text-align: left;">Qwen3-VL (Alibaba), Gemini Flash (Google)</td>
-<td style="text-align: left;">object listing, episode mining</td>
+<td align="left">Qwen3-VL (Alibaba), Gemini Flash (Google)</td>
+<td align="left">object listing, episode mining</td>
 </tr>
 <tr>
-<td style="text-align: left;">Hunyuan3D-2.1 (Tencent)</td>
-<td style="text-align: left;">object meshes</td>
+<td align="left">Hunyuan3D-2.1 (Tencent)</td>
+<td align="left">object meshes</td>
 </tr>
 <tr>
-<td style="text-align: left;">MiniLM</td>
-<td style="text-align: left;">name and instruction embeddings</td>
+<td align="left">MiniLM</td>
+<td align="left">name and instruction embeddings</td>
 </tr>
 </tbody>
 </table>
