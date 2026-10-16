@@ -31,7 +31,7 @@
 <p align="center">My submission for the <b>Humanoid Spatial AI internship challenge</b> ("What changed in the room?"), October 2026.</p>
 
 <h2>Why I built this</h2>
-<p>My idea for this project was to copy a situation that a home robot or any physical AI system will be in all the time. Over the first days in your house it gets familiar with the place, so it knows where the mugs live, which box is the shoe box and where the broom leans, and here that memory is a Gaussian splat built from one walk through the room. After that the room keeps changing without the robot being told, because someone borrows the screwdriver, leaves a parcel on the table or puts the fruit bowl somewhere else, and a robot that acts on a stale memory reaches for things that are not there anymore. So the question I wanted to answer is how much a robot can notice the moment it walks into a room, or from wherever it happens to be standing, without having to walk around to collect more views first, and the small sets of photos are exactly that: a few glances from the spot where the robot is.</p>
+<p>My idea for this project was to copy a situation that a home robot or any physical AI system will be in all the time. Over its first days in a house it gets familiar with the place and learns where things usually are, and here that memory is a Gaussian splat built from one walk through the room. After that the room keeps changing without anyone telling the robot, and a robot that acts on a stale memory goes looking for things that are not there anymore. So the question I wanted to answer is how much a robot can notice the moment it walks into a room, or from wherever it happens to be standing, without having to walk around to collect more views first, and the small sets of photos are exactly that: a few glances from the spot where the robot is.</p>
 <p>I picked a splat for the memory because it can render what the room should look like from any pose the robot ends up at, which turns "what changed?" into a comparison between what the robot remembers and what it sees from the same viewpoint, and because its Gaussians can be grouped into objects afterwards, so the answer can be one line per object with a number saying how much to trust it instead of a heatmap. I also wanted the checker to be trained on the room it lives in, the same way the robot learns one house, so I train a small model on edits of the splat itself instead of writing rules per object type or asking a vision-language model to compare two pictures, which in my early tests mistook a change of viewpoint for a change of the room.</p>
 <p>I made the data deliberately tricky, because real homes are messy and an easy test would not say much. The room is my cluttered living room with about 40 objects on and around a coffee table, and a lot of those are plain cardboard boxes that look alike, which is the kind of thing a robot has to tell apart by where it was and not only by how it looks. For the changes I wanted to test object permanence and the difference between identity and appearance, so some objects moved but stayed in the frame, in one set I put a second identical object right next to the original, another set has a plate that was added, in some I hid things behind other things, and a few objects went back where they were after I had moved them. I took the photos from wherever I was standing, including the sofa side of the room that the walk never covered closely, because a robot will not always come in from the places it learned the room from, so it also has to know when it cannot see well enough and say it cannot verify something instead of guessing. Between the sets I reset the room to its original state, so every set is compared with the reference walk only and never with the set before it. The current data is one three-minute walk, 22 change sets with 3 photos each, and 5 photos of the untouched room, and the only thing I tell the system about the room is a list of object names that I wrote after looking at the photos.</p>
 <p>The scope is one static room that has been filmed once, with objects from a few centimetres up to furniture size and changes that leave a visible trace in at least one photo. People walking around, places nobody filmed well and objects that are missing from the name list are outside it. I built this for the Humanoid Spatial AI internship challenge ("what changed in the room?") and I am carrying on with it after the deadline, and the next step is letting the robot decide where to look next when the first glance is not enough.</p>
@@ -114,15 +114,27 @@
   <br><sub>Group 15: the pale green bowl, the yellow spirit level and the honey squeeze bottle were removed.</sub>
 </p>
 
+<p>Two of the groups where I marked every change the pipeline reported as correct when I scored them:</p>
+<table>
+<tr>
+<td width="50%"><img src="assets/media/film_g07.gif" alt="The film for group 7: the navy lotus shoe box turns into a red hologram on the coffee table, the egg carton glides to its new place, and the green knitted cloth on the sofa and the blue plastic bottle on the side table appear, ending on the real photo with labels." width="100%"></td>
+<td width="50%"><img src="assets/media/film_g13.gif" alt="The film for group 13: the white plastic milk jug turns into a red hologram, and the egg carton, the orange sony camera box and the steel frying pan glide to their new places, ending on the real photo with labels." width="100%"></td>
+</tr>
+<tr>
+<td><sub>Group 7: the shoe box was removed, the egg carton moved, and a cloth and a bottle were added.</sub></td>
+<td><sub>Group 13: the milk jug was removed, and the egg carton, the camera box and the frying pan moved.</sub></td>
+</tr>
+</table>
+
 <details>
 <summary>Another group</summary>
-<br>
+<p><br></p>
 <p align="center">
   <img src="assets/media/film_g01.gif" alt="The film for group 1: the pale green bowl turns into a red hologram and the egg carton glides 40 cm to its new place." width="70%">
 </p>
 </details>
-
 <h2>Results</h2>
+<p>There is no ground truth for real room changes that I could download, so the main result is my own scoring of what each method reported on the real photos, since I am the one who made the changes and I know what happened in each set. I compare the full pipeline with SceneDiff, a published change-detection method, and with a rule-based version of my own pipeline on the same sets. The checks on synthetic edits, the calibration and the untouched-room test only look at parts of the pipeline, so I put them in a collapsed section after the main comparison.</p>
 <h3>Experimental protocol</h3>
 <p>Everything is on one room that I scanned once. The reference walk gives 276 frames, and I split it by time: the 864 training pairs of the checker and the fingerprints of the objects come from the first 80 %, and the last 20 % is held out from every calibration and supplies the 220 validation pairs of the checker. The splat itself was trained on the walk frames including that last part (apart from 25 frames kept out to measure it), so the validation renders are a little easier than renders from new poses would be. The 66 photos of the 22 change sets and the 5 photos of the untouched room are never used for training or for fitting anything in the final pipeline, and I list in the next section what I did look at while developing.</p>
 <table>
@@ -258,7 +270,9 @@
 </p>
 
 <p>The full pipeline and SceneDiff find about the same number of the 62 distinct real changes (29 and 28), while the pipeline reports far fewer events that were wrong, so its precision is higher (94 % against 65 %) and the two intervals do not overlap. Both find somewhat more than the rules (21), although those intervals overlap. The change-type accuracy is where the wrong answers pile up for all three methods: the 20 cards with the right object and the wrong type are all objects that I had moved, and 18 of them were reported as removed or added, so what goes wrong most often is deciding that an object in the photo is the same one as in the reference, and only 2 cards in the whole list had the right object with a wrong name, both from SceneDiff. The per-set counts are in <code>examples/manual_review/per_group.csv</code>.</p>
-<h3>Ablations</h3>
+<details>
+<summary><b>Checks on parts of the pipeline</b> (ablations, synthetic edits, calibration, the untouched room)</summary>
+<h4>Ablations</h4>
 <p>Each row changes one thing and names the data it was measured on.</p>
 <table>
 <thead>
@@ -295,12 +309,11 @@
 </tbody>
 </table>
 <p>On the untouched room every one of these variants reports nothing wrongly, so that column does not separate them, and the event counts only say how much each variant reports, not how much of it is right, which is what the manual scoring above is for.</p>
-<h3>Recall on held-out synthetic edits by type and size</h3>
+<h4>Recall on held-out synthetic edits by type and size</h4>
 <p>This is the only place where I have labels for every pixel, because the edits are made by me in the splat. An edit counts as found when a quarter of its region gets the right class from the checker, and the numbers are on the 220 validation pairs.</p>
 <p align="center">
   <img src="assets/result_recall.png" alt="Left: horizontal bars of recall of held-out edits by type: remove 0.98, add 0.98, move 15-60 cm 0.96, move 2-10 cm 0.86, rotate 0.79, move 2-5 cm 0.75. Right: on the same 48 pairs and the same object step, hand-written rules reach object recall 0.29 with 16 wrongly detected changes on pairs without an edit, the learned checker 0.49 with none." width="85%">
 </p>
-
 <table>
 <thead>
 <tr>
@@ -364,12 +377,11 @@
 </tbody>
 </table>
 <p>Over all 191 edits the recall is 0.93, the pixel F1 is 0.86 for appeared and 0.90 for missing, and 0.1 % of the pixels of the 78 pairs without an edit are flagged. The jump from 0.93 here to 0.49 on the 48-pair comparison is the object step that sat on top of SAM masks in the earlier version, which is why the final pipeline reads the checker's maps on the objects' own rendered masks.</p>
-<h3>Calibration</h3>
+<h4>Calibration</h4>
 <p>The change probabilities are Platt-scaled on those held-out edits with two folds split by frame, and probabilities from several photos that agree are combined by noisy-OR.</p>
 <p align="center">
   <img src="assets/result_calibration.png" alt="Three reliability plots for missing, appeared and moved: observed fraction of true edits against predicted probability, out of fold. The curves lie on or above the diagonal at high probability. ECE is 0.014, 0.016 and 0.026." width="90%">
 </p>
-
 <table>
 <thead>
 <tr>
@@ -419,12 +431,11 @@
 </tbody>
 </table>
 <p>Most of the low ECE comes from the thousands of negatives near zero. The middle bins hold few samples and the curves lie above the diagonal there, so the model is cautious in that range, and the noisy-OR over photos is an extrapolation because every synthetic pair has a single view.</p>
-<h3>Objects wrongly reported as changed in the 5 photos of the untouched room</h3>
+<h4>Objects wrongly reported as changed in the 5 photos of the untouched room</h4>
 <p>Every method was run on the same 5 photos of the untouched room, where nothing should be reported.</p>
 <p align="center">
   <img src="assets/result_false_alarms.png" alt="Bar chart of objects wrongly reported as changed in the 5 photos of the untouched room: this pipeline 0, learned checker plus SAM masks 0, SAM mask matching 0, depth blobs 0, zero-shot rules on Pi3X 0, SceneDiff 16, VLM judge 21." width="70%">
 </p>
-
 <table>
 <thead>
 <tr>
@@ -486,6 +497,7 @@
 </tbody>
 </table>
 <p>A method that reports nothing gets a zero here too, so this column only says something together with the counts next to it, and the 5 photos are a small sample: zero wrong reports on 5 photos is compatible with a rate well above zero.</p>
+</details>
 <h2>What was fixed by hand and what was tuned on what</h2>
 <p>The only input that is specific to this room is the list of object names. I wrote it myself after looking at the photos, so it knows about things like the "fox print bowl" and the "navy lotus shoe box" that nobody would guess from the video alone. An earlier version also had a review file of hand-made renames and merges of the inventory, and I removed it and everything that used it, so the numbers here come from the automatic names only.</p>
 <p>Every threshold of the final pipeline is either a calibrated probability of 0.5, or a value measured on the held-out last 20 % of the walk and on the synthetic edits of it, and none of them was fitted on the change sets. That is not the whole story of how the pipeline came to look the way it does, because I looked at the real change sets while developing it and a few decisions were made with them in front of me. The rule that an object only counts as newly missing when at least two photos or one clear view show it missing and more photos show it missing than present, and the matching of a detection to an object's place, were adopted after I looked at change sets 1 and 5, so those two sets are not a clean test of them. Earlier versions of the pipeline chose their heatmap thresholds on group 0, the 5 untouched photos, and the depth-blob and SAM-matching baselines chose their gates there too, so for those baselines the untouched room is a tuning set and their zero wrongly reported objects there says little. The threshold for pairing a removal with an addition into one move was also set with the real sets in view. The 3 % limit on how far the aligned photo depth may disagree with the prediction before I drop a photo and the choice of 3 cameras for a pixel to count as known come from the time I was developing on the real photos as well, and my notes do not say which sets I was looking at.</p>

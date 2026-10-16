@@ -8,6 +8,7 @@ GH = "https://github.com/ar3o/where-did-my-stuff-go"
 OUT = Path(__file__).parent / "where-did-my-stuff-go"
 src = (REPO / "README.md").read_text()
 src = re.sub(r"<p align=\"center\"><b>Live write-up:</b>.*?</p>\n", "", src, flags=re.S)
+src = src.replace("<details>", '<details markdown="1">')   # let md_in_html parse the collapsed sections
 body = markdown.markdown(src, extensions=["tables", "md_in_html", "fenced_code"])
 body = re.sub(r'href="((?:docs|examples)/[^"]*)"', lambda m: f'href="{GH}/blob/main/{m.group(1)}"', body)
 body = body.replace('href="LICENSE"', f'href="{GH}/blob/main/LICENSE"')
