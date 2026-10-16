@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Archie McMurray</title><link rel="stylesheet" href="style.css"></head><body><main>
+<h1>Archie McMurray</h1>
+<p class="muted">Robot learning, 3D vision and simulation. MRes Medical Robotics and Image-Guided Intervention, Imperial College London.</p>
+<p class="links"><a href="https://github.com/ar3o">GitHub</a><a href="mailto:ajsmcmurray@gmail.com">Email</a></p>
+
+<h2>Projects</h2>
+<div class="grid">
+  <div class="card"><a href="clean-tables/"><img src="clean-tables/assets/hero_strip-light.jpg" alt="Phone video, physics twin and robot arms on the same table"></a>
+    <div class="body"><h3><a href="clean-tables/">Can Androids Dream of Clean Tables?</a></h3>
+    <p>An automated pipeline that turns unlabelled phone videos of a person tidying a table into physics twins, a world model of the task, and two-arm dexterous robot policies trained in Isaac Sim.</p>
+    <span class="tag">world models</span><span class="tag">RL</span><span class="tag">real-to-sim</span><span class="tag">Isaac Sim</span>
+    <p style="margin-top:8px"><a href="clean-tables/">Write-up</a> · <a href="https://github.com/ar3o/can-androids-dream-of-clean-tables">Code</a></p></div></div>
+
+  <div class="card"><img src="assets/what_changed_hero.jpg" alt="A photo of a coffee table after a change, the Gaussian splat of the room from the same pose, and the detected changes outlined">
+    <div class="body"><h3>What changed in the room?</h3>
+    <p>Film a room once, come back with a few photos from anywhere, and get an object-by-object list of what moved, appeared or disappeared, with a confidence for each. Built on a Gaussian splat of the room and a checker trained only on edits of that room.</p>
+    <span class="tag">3D vision</span><span class="tag">change detection</span><span class="tag">Gaussian splatting</span></div></div>
+
+  <div class="card"><div class="body"><h3>Single-frame 3D surgical worlds</h3>
+    <p>MRes thesis at the Hamlyn Centre: lifting a single laparoscopic frame to a textured 3D scene and rendering new endoscope views with exact correspondences and labels, released as an NVIDIA Omniverse extension. Dense 3D correspondence pretraining improves few-label organ segmentation over a matched 2D control.</p>
+    <span class="tag">3D vision</span><span class="tag">self-supervised learning</span><span class="tag">Omniverse</span>
+    <p class="muted" style="margin-top:8px">Paper in preparation (IPCAI 2027)</p></div></div>
+
+  <div class="card"><div class="body"><h3>Vision-based RL navigation for autonomous endoscopy</h3>
+    <p>PPO policies in Isaac Lab that steer an endoscope from monocular RGB alone and transfer zero-shot to colon anatomies never seen in training, with depth-aware features learned from synthetic data and distilled for real-time control.</p>
+    <span class="tag">RL</span><span class="tag">sim-to-real</span><span class="tag">Isaac Lab</span></div></div>
+
+  <div class="card"><div class="body"><h3>Language-driven cobot control</h3>
+    <p>BEng thesis: frontier VLMs plan long-horizon tasks from natural language while PPO skills trained in Isaac Lab execute contact-rich manipulation, with VLM semantics grounded in scene geometry.</p>
+    <span class="tag">VLMs</span><span class="tag">RL</span><span class="tag">Isaac Sim</span></div></div>
+</div>
+</main></body></html>
