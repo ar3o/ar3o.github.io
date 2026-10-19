@@ -19,8 +19,8 @@
 </p>
 
 <p align="center">
-  <img src="assets/media/hero_fruit_one_arm.gif" alt="One Franka arm clearing a held-out fruit twin in 12 seconds with the world model choosing the object, the bowl and the path; the imagined path is drawn over the view." width="100%">
-  <br><sub>One arm clearing a fruit table it has never seen: the world model chooses what to move and where, NVIDIA's lift policy does the grasp. No training, the only scripted part is opening the gripper over the bowl.</sub>
+  <img src="assets/media/hero_fruit_curve.gif" alt="One Franka arm clearing a held-out fruit twin in 11 seconds, following the curved path the world model imagines, which is drawn over the view." width="100%">
+  <br><sub>One arm clearing a fruit table it has never seen: the world model chooses what to move, where it goes and the path to take (the dotted curve), and NVIDIA's lift policy does the grasp. No training, the only scripted part is opening the gripper over the bowl.</sub>
 </p>
 
 <p align="center">
@@ -172,15 +172,15 @@
 
 <p>The thing that held this back most was letting go. NVIDIA's policy was only ever trained to lift and hold, so it never opens its hand, and opening anywhere but right above the container loses reward, which makes holding on a comfortable place to stay. Every run where I removed the hand-written release and started from NVIDIA's policy alone stayed there. A run that starts 30% of its episodes from states it saved itself, holding an object near where the world model wants it, did learn to beat the scripted baseline on one tool twin but then flattened out. The earlier one-arm runs and the first two-arm numbers are in <a href="https://github.com/ar3o/can-androids-dream-of-clean-tables/blob/main/docs/results.md">docs/results.md</a>.</p>
 <h3>Parallel grippers: the version that works</h3>
-<p>Because the hand was the bottleneck, I also tried an ordinary parallel-gripper arm, the Franka Panda, which comes with its own NVIDIA lift policy (96.9% on its cube task, with my observation matching the task's to 2e-7). This is the version where everything came together, and what I like about it is how little I had to write. NVIDIA's policy only knows how to reach a cube and lift it to a point in the air, so everything else comes from the world model: it decides which object to move next and which container it goes in (fruit to the bowl, tools to the toolbox), and it imagines the path the object should take. The arm then carries the object to the container the world model chose, with NVIDIA's policy doing the grasp and the lift, and nothing is trained on my side. The one thing I script is the last step, opening the gripper when the object has arrived over the container, because NVIDIA's policy has never had a reason to open its hand. Two bookkeeping rules sit on top, because the world model keeps naming the object it has just been asked about: an object that has been let go of is not picked up again, and an object the arm cannot lift within ten seconds is given up on, so the arm moves on to the next one instead of waiting forever.</p>
+<p>Because the hand was the bottleneck, I also tried an ordinary parallel-gripper arm, the Franka Panda, which comes with its own NVIDIA lift policy (96.9% on its cube task, with my observation matching the task's to 2e-7). This is the version where everything came together, and what I like about it is how little I had to write. NVIDIA's policy only knows how to reach a cube and lift it to a point in the air, so everything else comes from the world model: it decides which object to move next and which container it goes in (fruit to the bowl, tools to the toolbox), and it imagines the path the object should take. The arm then carries the object along the world model's imagined path to the container it chose, with NVIDIA's policy doing the grasp and the lift, and nothing is trained on my side. The one thing I script is the last step, opening the gripper when the object has arrived over the container, because NVIDIA's policy has never had a reason to open its hand. Two bookkeeping rules sit on top, because the world model keeps naming the object it has just been asked about: an object that has been let go of is not picked up again, and an object the arm cannot lift within ten seconds is given up on, so the arm moves on to the next one instead of waiting forever.</p>
 <p align="center">
-  <img src="assets/media/hero_fruit_one_arm.gif" alt="One Franka arm clearing a held-out fruit twin in 12 seconds, with the world model's imagined path drawn over the camera view as a dotted curve from each fruit to the bowl; all five fruit end up in the bowl." width="100%">
-  <br><sub>A held-out fruit twin, one arm, no learning, in real time. The dotted curve is the path the world model imagines for the object being moved and the arrow is where it ends; the arm lifts and carries the object along an arc to the container the world model chose. This is the cleanest of five episodes I recorded (they put away 4, 1, 5, 5 and 4 of 5), and the table below has the average over 96 episodes.</sub>
+  <img src="assets/media/hero_fruit_curve.gif" alt="One Franka arm clearing a held-out fruit twin in 11 seconds, following the world model's imagined path, drawn over the camera view as a dotted curve from each fruit to the bowl; all five fruit end up in the bowl." width="100%">
+  <br><sub>A held-out fruit twin, one arm, no learning, in real time. The dotted curve is the path the world model imagines for the object being moved and the arrow is where it ends, and the arm follows it. This is the cleanest of eight episodes I recorded this way (they put away 3, 4, 3, 5, 2, 2, 1 and 3 of 5), and the table below has the average over 96 episodes.</sub>
 </p>
 
 <p align="center">
-  <img src="assets/media/hero_tools_one_arm.gif" alt="One Franka arm on a held-out tools twin: the pliers and the wrench are carried into the toolbox." width="100%">
-  <br><sub>The same on a held-out tools twin (both tools in the toolbox in this episode; the five episodes I recorded put away 2, 2, 2, 1 and 2 of 2).</sub>
+  <img src="assets/media/hero_tools_curve.gif" alt="One Franka arm on a held-out tools twin: the pliers and the wrench are carried into the toolbox." width="100%">
+  <br><sub>The same on a held-out tools twin, following the imagined curve (both tools in the toolbox in this episode; the four episodes I recorded put away 0, 2, 2 and 1 of 2).</sub>
 </p>
 
 <p>The table is the average over 96 episodes of 30 seconds on each of four held-out twins, which the world model and the policy never saw, counting an object as put away when the physics judge sees it resting inside its container.</p>
@@ -188,44 +188,44 @@
 <thead>
 <tr>
 <th align="left">Held-out twin</th>
-<th align="center">Objects put away</th>
-<th align="center">Episodes with everything put away</th>
+<th align="center">Following the imagined curve</th>
+<th align="center">Straight arc to the same container</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td align="left">Fruit, twin 11</td>
+<td align="center">293 of 480 (61%)</td>
 <td align="center">338 of 480 (70%)</td>
-<td align="center">18 of 96</td>
 </tr>
 <tr>
 <td align="left">Fruit, twin 14</td>
+<td align="center">352 of 576 (61%)</td>
 <td align="center">407 of 576 (71%)</td>
-<td align="center">18 of 96</td>
 </tr>
 <tr>
 <td align="left">Tools, twin 2546</td>
+<td align="center">111 of 192 (58%)</td>
 <td align="center">104 of 192 (54%)</td>
-<td align="center">32 of 96</td>
 </tr>
 <tr>
 <td align="left">Tools, twin 2547</td>
+<td align="center">159 of 384 (41%)</td>
 <td align="center">153 of 384 (40%)</td>
-<td align="center">2 of 96</td>
 </tr>
 <tr>
 <td align="left">All four</td>
-<td align="center">1,002 of 1,632 (61%, 95% interval 59 to 64)</td>
-<td align="center">70 of 384</td>
+<td align="center">915 of 1,632 (56%)</td>
+<td align="center">1,002 of 1,632 (61%)</td>
 </tr>
 </tbody>
 </table>
-<p>The fruit is easier than the tools, since a flat wrench next to a toolbox is hard for a policy that was trained on cubes, and the gripper opening is scripted, so this is a showcase of what the world model contributes and not a learned result. The arm also carries the object along a straight arc to the container the world model chose and not along the curve it imagines: when I made it follow the curve itself it put away only 28% over the same episodes, which I think is because the curve starts at table height and NVIDIA's policy only lifts towards a goal in the air (more on that under what's next). Two arms with the same ingredients put away 29% of the objects on seven held-out twins in my first try, because they kept getting in each other's way, so the single arm is where I stopped.</p>
+<p>The fruit is easier than the tools, since a flat wrench next to a toolbox is hard for a policy that was trained on cubes, and the gripper opening is scripted, so this is a showcase of what the world model contributes and not a learned result. Following the curve is a little worse than a straight arc on the fruit and the same on the tools, and getting it to work took one fix: the curve starts at table height, NVIDIA's policy only lifts towards a goal in the air, and with the raw curve it put away only 28% because it barely lifted, so I keep the first part of the curve at least 12 cm above the straight line. Even so, about 8% of the fruit is never grasped (mostly flat bananas) and a fifth is let go over the bowl and bounces out, which is what learning on top should be able to fix. Two arms with the same ingredients put away 29% of the objects on seven held-out twins in my first try, because they kept getting in each other's way, so the single arm is where I stopped.</p>
 <h2>6. From the trained policy to a vision-language-action model</h2>
 <p>Everything so far uses exact object positions from the simulator, which a real robot doesn't have, so the last step is to train a vision-language-action model that works from a camera and an instruction, with the RL policy as its teacher. I ran the strongest two-arm policy on the training twins and recorded every episode at 30 Hz (both arms' joints and commands, object poses, which arm was working on which object), which gave 3,648 episodes and 30 hours of robot data. Most episodes only finish part of the table, so the converter keeps every stretch that ends in a successful placement, which keeps 91% of the placements. Those first recordings have no images, so I added recording from my phone's viewpoint at 15 Hz to the same recorder, and it turned out that in runs with many twins in parallel only the first camera actually rendered anything, so the images are recorded one twin per process and there are only 105 usable segments.</p>
 <p>The student is SmolVLA, a small open vision-language-action model, with its action head widened from 32 to 46 joints. I trained it for 15,000 steps and it does not work yet: the arms move smoothly and the hands go to the fruit, but the fingers close without grasping and it put away 0 of 5 fruit, while the teacher's own commands through the same conversion put away 2 of 5, so the plumbing is fine and the model is the problem. Its loss on held-out twins rose from 1.21 to 2.06 while the training loss kept falling, which is overfitting: 105 segments is far too little for a model this size. It needs several hundred image episodes from a better teacher, which is what the Franka run is for.</p>
 <h2>Limitations and what's next</h2>
-<p>The biggest limitation right now is the two arms getting in each other's way: they often pick objects whose carries cross and end up stuck on each other, and flat tools next to boxes are still mostly missed. The best Allegro policy learned its release from a hand-written rule, the parallel-gripper version works without any training but its release is scripted and it follows a straight arc instead of the curve the world model imagines, and the vision-language-action model I trained overfits its 105 segments and doesn't grasp, so the claim that this runs end to end from phone videos to a camera-based policy is still one step short. The world model's instruction embedding at training time didn't match the one the twins give the teacher, which explains some of the wrong tool goals, and retraining with one embedding is the fix. The first thing I want to fix is following the world model's own curve: the curve starts at table height and NVIDIA's lift policy only lifts towards a goal in the air, so the arm barely lifts when it chases the curve, and I suspect the same thing held back my reinforcement learning runs that followed the path. Keeping the early part of the curve above a lift height is the fix I am testing. One idea I want to try for letting go is to have the world model learn from my videos when my own hand opens, so that it can say when to release and that signal can replace the container rule in the reward, and after that I want to record several hundred image episodes from a better teacher and retrain the vision-language-action model with image augmentation and early stopping, add videos of mixed tables so the instruction actually has to decide what to move, and feed in the full-table clean-ups I have already recorded. I will keep posting progress on the <a href="https://ar3o.github.io/clean-tables/">project page</a>. The full result tables and settings are in <a href="https://github.com/ar3o/can-androids-dream-of-clean-tables/blob/main/docs/results.md">docs/results.md</a> and <a href="https://github.com/ar3o/can-androids-dream-of-clean-tables/blob/main/docs/method.md">docs/method.md</a>.</p>
+<p>The biggest limitation right now is the two arms getting in each other's way: they often pick objects whose carries cross and end up stuck on each other, and flat tools next to boxes are still mostly missed. The best Allegro policy learned its release from a hand-written rule, the parallel-gripper version works without any training but its release is scripted and and the vision-language-action model I trained overfits its 105 segments and doesn't grasp, so the claim that this runs end to end from phone videos to a camera-based policy is still one step short. The world model's instruction embedding at training time didn't match the one the twins give the teacher, which explains some of the wrong tool goals, and retraining with one embedding is the fix. The first thing I want to try is learning on top of this controller, with the curve fix and without the scripted release, so the arm has to learn when to open. One idea I want to try for letting go is to have the world model learn from my videos when my own hand opens, so that it can say when to release and that signal can replace the container rule in the reward, and after that I want to record several hundred image episodes from a better teacher and retrain the vision-language-action model with image augmentation and early stopping, add videos of mixed tables so the instruction actually has to decide what to move, and feed in the full-table clean-ups I have already recorded. I will keep posting progress on the <a href="https://ar3o.github.io/clean-tables/">project page</a>. The full result tables and settings are in <a href="https://github.com/ar3o/can-androids-dream-of-clean-tables/blob/main/docs/results.md">docs/results.md</a> and <a href="https://github.com/ar3o/can-androids-dream-of-clean-tables/blob/main/docs/method.md">docs/method.md</a>.</p>
 <h2>Running it</h2>
 <p>Setup is in <a href="https://github.com/ar3o/can-androids-dream-of-clean-tables/blob/main/docs/installation.md">docs/installation.md</a> and every stage is explained in <a href="https://github.com/ar3o/can-androids-dream-of-clean-tables/blob/main/docs/running.md">docs/running.md</a>.</p>
 <pre><code class="language-bash">export PYTHONPATH=$PWD
