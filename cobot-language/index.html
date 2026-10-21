@@ -1,0 +1,77 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>More Human Than Human</title>
+<meta name="description" content="BEng thesis: a multi-modal AI framework for natural language cobot control in NVIDIA Isaac Sim.">
+<link rel="stylesheet" href="../style.css">
+<style>
+  article figure { margin: 22px 0 28px; }
+  article figure img, article figure video { width: 100%; height: auto; display: block; border-radius: 6px; }
+  article figcaption { color: var(--muted); font-size: 0.88em; margin-top: 8px; line-height: 1.5; }
+  .byline { margin: 6px 0 2px; } .byline + .muted { margin-top: 0; }
+  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .row.two { grid-template-columns: 1fr 1fr; }
+  .row figure { margin: 0; }
+  .row figcaption { text-align: center; margin-top: 4px; }
+  .group { margin: 22px 0 28px; } .group > figcaption { margin-top: 10px; }
+  .narrow { max-width: 720px; margin-left: auto; margin-right: auto; }
+  .chart { background: #fff; border-radius: 6px; padding: 6px; }
+  @media (max-width: 640px) { .row, .row.two { grid-template-columns: 1fr; } }
+</style></head><body><main>
+<nav><a href="../">Archie McMurray</a> / More Human Than Human</nav>
+<article>
+<h1>More Human Than Human</h1>
+<p class="byline">A multi-modal AI framework for natural language cobot control in unstructured environments</p>
+<p class="muted">Archie McMurray · BEng Robotics, Mechatronic and Control Engineering, Loughborough University · 2025</p>
+
+<p class="note">BEng individual project. Built in NVIDIA Isaac Sim with a simulated Franka Panda; skills trained with PPO in Isaac Lab.</p>
+
+<figure>
+  <img src="assets/scene.jpg" alt="A simulated Franka Panda arm above a white table scattered with coloured cubes, cylinders, cuboids and spheres.">
+  <figcaption>The evaluation scene: twelve shapes of different sizes and colours, placed close together and at random orientations.</figcaption>
+</figure>
+
+<h2>Motivation</h2>
+<p>Industrial robots are programmed task by task, which keeps them out of the places where a person would simply say what they want: "unscrew the bolts on this", or "carefully move the blue one to the left". Large language and vision-language models can now reason about instructions like these, but they do not move robots. This project connects the two, letting a foundation model plan from language and vision while dedicated planners and learned policies do the physical work.</p>
+
+<h2>How it works</h2>
+<p>A spoken or typed command (transcribed with Deepgram) is combined with a camera image, the scene state, object poses and the robot's recent history. A multimodal model (Gemini, GPT or Claude, swappable) turns this into a plan built from a library of skills. Each skill is either a collision-free motion-planned routine (cuRobo, RMPflow) or a reinforcement-learned policy. The plan runs in Isaac Sim, and errors from the simulator or from a VLM check of the result feed back to the model for replanning.</p>
+<figure class="narrow">
+  <img src="assets/architecture.jpg" alt="Architecture diagram: user command, sim camera image, scene data and robot history feed a multimodal model for task planning, which draws on a skill base of motion-planned actions and RL policies and sends a generated plan to an execution module in Isaac Sim, with error checking and replanning looping back.">
+  <figcaption>The framework, from command and context to an executed plan with a replanning loop.</figcaption>
+</figure>
+
+<h3>Sentiment-aware motion</h3>
+<p>Words such as "carefully" or "quickly" are scored by the planner on a speed-to-precision scale and mapped to motion planner settings, so the same skill runs faster or more precisely depending on how it was asked for.</p>
+<figure>
+  <img class="chart" src="assets/sentiment.png" alt="Line chart of sentiment score from minus one (speed) to plus one (precision) against interpolation time step, which falls, and number of interpolation steps, which rises.">
+  <figcaption>Sentiment score mapped to interpolation time step and step count in the motion planner.</figcaption>
+</figure>
+
+<h3>Learned skills</h3>
+<p>Contact-rich skills were trained with PPO in Isaac Lab. The bolt pickup policy grasps, lifts and carries a bolt from a randomised 6-D pose and succeeded in <b>82.8%</b> of 1000 evaluation episodes.</p>
+<div class="group">
+  <div class="row two">
+    <figure><img src="assets/rl_bolt_pickup.gif" alt="Simulated Franka arm picking a small bolt off a dark table."><figcaption>Bolt pickup</figcaption></figure>
+    <figure><img src="assets/rl_move_to_screw.gif" alt="Simulated Franka arm carrying a bolt to a hole in a grey block."><figcaption>Moving a bolt to the screw hole</figcaption></figure>
+  </div>
+  <figcaption>Policies trained in Isaac Lab.</figcaption>
+</div>
+
+<h2>Evaluation</h2>
+<p>Ten commands tested different abilities, from "Pick up the green cube" and "Quickly rotate the largest cuboid 77 degrees clockwise" to "Hide the small sphere", "Build a stable tower using three different objects" and, as a closing Turing test, "Construct something beautiful". Each model's plans were scored for task comprehension, action-sequence validity and object and spatial awareness (0 to 2 each, 60 in total).</p>
+<table>
+  <tr><th>Model</th><th>Plan score (/60)</th></tr>
+  <tr><td>Gemini 2.5 Pro</td><td>55</td></tr>
+  <tr><td>Claude 3.7 Sonnet</td><td>53</td></tr>
+  <tr><td>GPT-4.1</td><td>53</td></tr>
+  <tr><td>Gemini 2.5 Flash (preview)</td><td>45</td></tr>
+  <tr><td>Gemini 2.0 Flash</td><td>34 (31 with a simplified prompt)</td></tr>
+</table>
+<figure>
+  <img class="chart" src="assets/model_score_vs_speed.png" alt="Scatter plot of total plan score against end-to-end response time. GPT-4.1 and Claude 3.7 Sonnet score about 53 at 5 to 10 seconds, Gemini 2.5 Pro scores 55 at about 33 seconds, and the Flash models score lower but respond faster.">
+  <figcaption>Plan quality against end-to-end latency (10k input tokens, 500 output tokens). GPT-4.1 and Claude 3.7 Sonnet give the best balance; Gemini 2.5 Pro plans best but takes around 33 s.</figcaption>
+</figure>
+<p>Gemini 2.5 Pro was the most reliable at spatial reasoning, handling the rotation and hiding commands correctly. GPT-4.1 and Claude produced the most creative answers to "Construct something beautiful". Executed in simulation, GPT-4.1's plans completed <b>6 of 10</b> commands; most failures came from collisions in the cluttered scene rather than from the plans themselves.</p>
+
+<h2>Takeaways</h2>
+<p>Frontier models already plan embodied tasks well from language and a single image, but their latency matters for real-time control, and their 3-D spatial and affordance reasoning is the weakest link. Turning good plans into reliable execution needs the same attention as the planning: collision-aware skills, perception that tolerates noise, and recovery when things go wrong.</p>
+</article></main></body></html>
