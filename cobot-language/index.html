@@ -14,6 +14,7 @@
   .group { margin: 22px 0 28px; } .group > figcaption { margin-top: 10px; }
   .narrow { max-width: 720px; margin-left: auto; margin-right: auto; }
   .chart { background: #fff; border-radius: 6px; padding: 6px; }
+  .gif { max-width: 600px; margin-left: auto; margin-right: auto; }
   @media (max-width: 640px) { .row, .row.two { grid-template-columns: 1fr; } }
 </style></head><body><main>
 <nav><a href="../">Archie McMurray</a> / More Human Than Human</nav>
@@ -38,12 +39,20 @@
   <img src="assets/architecture.jpg" alt="Architecture diagram: user command, sim camera image, scene data and robot history feed a multimodal model for task planning, which draws on a skill base of motion-planned actions and RL policies and sends a generated plan to an execution module in Isaac Sim, with error checking and replanning looping back.">
   <figcaption>The framework, from command and context to an executed plan with a replanning loop.</figcaption>
 </figure>
+<figure class="gif">
+  <img src="assets/llm_stack_plan.gif" alt="The generated plan listed beside the simulated arm, with each step highlighted as the arm picks up a green cube and stacks it.">
+  <figcaption>A stacking command. The model's plan runs step by step, with the current step highlighted (sped up 7×).</figcaption>
+</figure>
 
 <h3>Sentiment-aware motion</h3>
 <p>Words such as "carefully" or "quickly" are scored by the planner on a speed-to-precision scale and mapped to motion planner settings, so the same skill runs faster or more precisely depending on how it was asked for.</p>
 <figure>
   <img class="chart" src="assets/sentiment.png" alt="Line chart of sentiment score from minus one (speed) to plus one (precision) against interpolation time step, which falls, and number of interpolation steps, which rises.">
   <figcaption>Sentiment score mapped to interpolation time step and step count in the motion planner.</figcaption>
+</figure>
+<figure>
+  <img src="assets/sentiment_fast_vs_careful.gif" alt="Two simulated arms side by side: on the left the arm moves quickly towards the objects, on the right it moves slowly.">
+  <figcaption>The same scene asked "kinda fast" (left) and "very carefully" (right), both in real time.</figcaption>
 </figure>
 
 <h3>Learned skills</h3>
@@ -71,6 +80,13 @@
   <figcaption>Plan quality against end-to-end latency (10k input tokens, 500 output tokens). GPT-4.1 and Claude 3.7 Sonnet give the best balance; Gemini 2.5 Pro plans best but takes around 33 s.</figcaption>
 </figure>
 <p>Gemini 2.5 Pro was the most reliable at spatial reasoning, handling the rotation and hiding commands correctly. GPT-4.1 and Claude produced the most creative answers to "Construct something beautiful". Executed in simulation, GPT-4.1's plans completed <b>6 of 10</b> commands; most failures came from collisions in the cluttered scene rather than from the plans themselves.</p>
+<div class="group">
+  <div class="row two">
+    <figure><img src="assets/llm_hide_sphere.gif" alt="Simulated arm picking up a small blue sphere and placing it behind a large green cylinder."><figcaption>"Hide the small sphere"</figcaption></figure>
+    <figure><img src="assets/llm_match_orientation.gif" alt="Simulated arm rotating a block on the table to a new orientation."><figcaption>Orientation control</figcaption></figure>
+  </div>
+  <figcaption>Plans executed in Isaac Sim (sped up 6×).</figcaption>
+</div>
 
 <h2>Takeaways</h2>
 <p>Frontier models already plan embodied tasks well from language and a single image, but their latency matters for real-time control, and their 3-D spatial and affordance reasoning is the weakest link. Turning good plans into reliable execution needs the same attention as the planning: collision-aware skills, perception that tolerates noise, and recovery when things go wrong.</p>
