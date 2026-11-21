@@ -1,39 +1,148 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Archie McMurray</title><link rel="stylesheet" href="style.css"></head><body><main>
-<h1>Archie McMurray</h1>
-<p class="muted">Robot learning, 3D vision and simulation. MRes Medical Robotics and Image-Guided Intervention, Imperial College London.</p>
-<p class="links"><a href="https://github.com/ar3o">GitHub</a><a href="mailto:ajsmcmurray@gmail.com">Email</a></p>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Archie McMurray</title>
+<meta name="description" content="Archie McMurray. Robot learning, simulation and 3D vision for surgical and humanoid robots.">
+<meta property="og:title" content="Archie McMurray">
+<meta property="og:description" content="Robot learning, simulation and 3D vision for surgical and humanoid robots.">
+<meta property="og:image" content="https://ar3o.github.io/assets/thumbs/clean-tables.jpg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
 
-<h2>Projects</h2>
-<div class="grid">
-  <div class="card"><a href="clean-tables/"><img src="assets/thumbs/clean-tables.jpg" alt="A phone video of a person tidying next to two robot arms doing the same table in Isaac Sim"></a>
-    <div class="body"><h3><a href="clean-tables/">Can Androids Dream of Clean Tables?</a></h3>
-    <p>An automated pipeline that turns unlabelled phone videos of a person tidying a table into physics twins, a world model of the task, and two-arm robot policies post-trained with RL in Isaac Sim.</p>
-    <span class="tag">world models</span><span class="tag">RL</span><span class="tag">real-to-sim</span><span class="tag">Isaac Sim</span>
-    <p style="margin-top:8px"><a href="clean-tables/">Write-up</a> · <a href="https://github.com/ar3o/can-androids-dream-of-clean-tables">Code</a></p></div></div>
+<header class="intro">
+  <h1>Archie McMurray</h1>
+  <p class="role">Robot learning, simulation and 3D vision</p>
+  <p>I am a Robot Learning Research Intern at <a href="https://thehumanoid.ai">Humanoid</a> in London, working on reinforcement learning and sim-to-real transfer for humanoid robots. I completed the MRes in Medical Robotics and Image-Guided Intervention at Imperial College London with a Distinction. For my thesis, with EnAcuity and the Hamlyn Centre, I developed a method to lift single surgical images into editable 3D scenes for training and testing surgical vision models.</p>
+  <div class="buttons">
+    <a class="btn primary" href="mailto:ajsmcmurray@gmail.com">Email</a>
+    <a class="btn" href="https://github.com/ar3o">GitHub</a>
+    <a class="btn" href="#publications">Publications</a>
+    <a class="btn" href="#projects">Projects</a>
+  </div>
+</header>
 
-  <div class="card"><img src="assets/thumbs/where-did-my-stuff-go.jpg" alt="A photo of a coffee table after a change, the Gaussian splat of the room from the same pose, and the detected changes outlined">
-    <div class="body"><h3>Where did my stuff go</h3>
-    <p>Film a room once, come back with a few photos from anywhere, and get an object-by-object list of what moved, appeared or disappeared, with a confidence for each. Built on a Gaussian splat of the room and a checker trained only on edits of that room.</p>
-    <span class="tag">3D vision</span><span class="tag">change detection</span><span class="tag">Gaussian splatting</span>
-    <p style="margin-top:8px"><a href="where-did-my-stuff-go/">Write-up</a> · <a href="https://github.com/ar3o/where-did-my-stuff-go">Code</a></p></div></div>
-
-  <div class="card"><a href="surgical-worlds/"><img src="assets/thumbs/surgical-worlds.jpg" alt="Real hyperspectral surgical frames and the 3-D tissue worlds lifted from them"></a>
-    <div class="body"><h3><a href="surgical-worlds/">Surgical Tissue Worlds</a></h3>
-    <p>MRes thesis at the Hamlyn Centre: lifting a single hyperspectral or RGB surgical frame to an editable 3-D scene and rendering new views under controlled viewpoint, deformation, lighting and physiology, with exact correspondences and labels. Scenes open in an NVIDIA Omniverse extension for robustness testing.</p>
-    <span class="tag">3D vision</span><span class="tag">hyperspectral imaging</span><span class="tag">synthetic data</span><span class="tag">Omniverse</span>
-    <p style="margin-top:8px"><a href="surgical-worlds/">Project page</a> · <span class="muted">Paper in preparation (IPCAI 2027)</span></p></div></div>
-
-  <div class="card"><a href="endoscopy-navigation/"><img src="assets/thumbs/endoscopy-navigation.jpg" alt="View down a rendered colon lumen from a virtual endoscope"></a>
-    <div class="body"><h3><a href="endoscopy-navigation/">Vision-based RL navigation for autonomous endoscopy</a></h3>
-    <p>PPO policies in Isaac Lab that steer an endoscope from monocular RGB alone and transfer zero-shot to colon anatomies never seen in training, with depth-aware features learned from synthetic data and distilled for real-time control.</p>
-    <span class="tag">RL</span><span class="tag">sim-to-real</span><span class="tag">Isaac Lab</span>
-    <p style="margin-top:8px"><a href="endoscopy-navigation/">Project page</a></p></div></div>
-
-  <div class="card"><a href="cobot-language/"><img src="assets/thumbs/cobot-language.jpg" alt="Simulated Franka arm above a table of coloured shapes"></a>
-    <div class="body"><h3><a href="cobot-language/">Language-driven cobot control</a></h3>
-    <p>BEng thesis: frontier VLMs plan long-horizon tasks from natural language while PPO skills trained in Isaac Lab execute contact-rich manipulation, with VLM semantics grounded in scene geometry.</p>
-    <span class="tag">VLMs</span><span class="tag">RL</span><span class="tag">Isaac Sim</span>
-    <p style="margin-top:8px"><a href="cobot-language/">Project page</a></p></div></div>
+<h2 id="publications">Publications</h2>
+<div class="entry">
+  <a class="thumb" href="surgical-worlds/" data-video="assets/previews/surgical-worlds.mp4"><img src="assets/thumbs/surgical-worlds.jpg" alt="Hyperspectral surgical scenes rendered from new viewpoints" loading="lazy"></a>
+  <div>
+    <h3><a href="surgical-worlds/">HyperLift: 3D Scenes from Single Surgical Frames for Hyperspectral View Synthesis and Simulation</a></h3>
+    <p class="meta"><b>Archie McMurray</b>, first author · <span class="venue">IPCAI 2027</span>, under review</p>
+    <p>A single hyperspectral or RGB laparoscopic frame is lifted to a 3D surface that keeps its measured appearance, then re-rendered under new viewpoints, deformation, lighting and blood oxygenation with exact pixel correspondences and labels. This is the follow-on to my MRes thesis.</p>
+    <div class="buttons"><a class="btn small" href="surgical-worlds/">Project page</a><span class="btn small static">Paper under review</span></div>
+  </div>
 </div>
-</main></body></html>
+<div class="entry">
+  <a class="thumb" href="assets/poster/hamlyn2026_poster.jpg"><img src="assets/poster/hamlyn2026_poster_thumb.jpg" alt="Poster: 3D Hyperspectral Digital Twins for Controllable Synthetic Surgical Data" loading="lazy" style="object-position: top"></a>
+  <div>
+    <h3><a href="assets/poster/hamlyn2026_poster.pdf">3D Hyperspectral Digital Twins for Controllable Synthetic Surgical Data</a></h3>
+    <p class="meta"><b>Archie McMurray</b>, Tobias Czempiel, Daniel S. Elson, Charly Caredda · <span class="venue">Hamlyn Symposium on Medical Robotics 2026</span>, Physics- and AI-Driven Digital Twins Workshop, poster</p>
+    <p>Real surgical hyperspectral images are fitted with a layered optical tissue model and lifted to 3D, so the tissue state can be edited and re-rendered as paired RGB and hyperspectral data with labels, for example to replay a perfusion change or simulate necrosis.</p>
+    <div class="buttons"><a class="btn small" href="assets/poster/hamlyn2026_poster.pdf">Poster (PDF)</a><a class="btn small" href="assets/poster/hamlyn2026_poster.jpg">Poster (image)</a></div>
+  </div>
+</div>
+
+<h2 id="projects">Projects</h2>
+
+<div class="entry">
+  <a class="thumb" href="clean-tables/" data-video="assets/previews/clean-tables.mp4"><img src="assets/thumbs/clean-tables.jpg" alt="Two simulated robot arms tidying fruit into a bowl in a randomised kitchen" loading="lazy"></a>
+  <div>
+    <h3><a href="clean-tables/">Autonomous World-Model-Guided Policy Learning from Unlabeled Monocular Video</a></h3>
+    <p class="meta">Humanoid technical challenge · 2026</p>
+    <p>Unlabelled phone videos of a person tidying a table are rebuilt automatically as physics twins in Isaac Sim, with each object's shape and motion and the phone's camera recovered from video alone. A world model trained on the videos is then post-trained with RL to plan for two robot arms across thousands of randomised scenes.</p>
+    <div class="buttons"><a class="btn small" href="clean-tables/">Write-up</a><a class="btn small" href="https://github.com/ar3o/can-androids-dream-of-clean-tables">Code</a></div>
+  </div>
+</div>
+
+<div class="entry">
+  <a class="thumb" href="where-did-my-stuff-go/" data-video="assets/previews/where-did-my-stuff-go.mp4"><img src="assets/thumbs/where-did-my-stuff-go.jpg" alt="A 3D Gaussian splat of a living room with a detected new object marked" loading="lazy"></a>
+  <div>
+    <h3><a href="where-did-my-stuff-go/">Object-Level Change Detection from a Few Photos with a Gaussian Splat Memory</a></h3>
+    <p class="meta">Side project, built for fun · 2026</p>
+    <p>A room is filmed once and rebuilt as a Gaussian splat. Later photos taken from any position are compared against it, and a checker trained only on simulated edits of that room lists the objects that moved, appeared or disappeared, each with a confidence.</p>
+    <div class="buttons"><a class="btn small" href="where-did-my-stuff-go/">Write-up</a><a class="btn small" href="https://github.com/ar3o/where-did-my-stuff-go">Code</a></div>
+  </div>
+</div>
+
+<div class="entry">
+  <a class="thumb" href="endoscopy-navigation/" data-video="assets/previews/endoscopy-navigation.mp4"><img src="assets/thumbs/endoscopy-navigation.jpg" alt="View down a rendered colon from a virtual endoscope" loading="lazy"></a>
+  <div>
+    <h3><a href="endoscopy-navigation/">Reinforcement Learning for Autonomous Endoscope Navigation from Monocular Depth</a></h3>
+    <p class="meta">MRes project, Imperial College London · 2025</p>
+    <p>PPO policies trained in Isaac Lab steer an endoscope from a single RGB camera and transfer zero-shot to colon anatomies not seen in training. The depth-aware vision encoder is trained on more than 20,000 synthetic RGB and depth pairs from procedurally deformed tissue.</p>
+    <div class="buttons"><a class="btn small" href="endoscopy-navigation/">Write-up</a></div>
+  </div>
+</div>
+
+<div class="entry">
+  <a class="thumb" href="cobot-language/" data-video="assets/previews/cobot-language.mp4"><img src="assets/thumbs/cobot-language.jpg" alt="A simulated Franka arm above a table of coloured shapes" loading="lazy"></a>
+  <div>
+    <h3><a href="cobot-language/">Language-Driven Cobot Control with Vision-Language Planning and Learned Skills</a></h3>
+    <p class="meta">BEng thesis, Loughborough University · 2025</p>
+    <p>Vision-language models plan long-horizon tasks from natural language in an Isaac Sim digital twin, and PPO skills carry out the contact-rich steps such as nut-and-bolt fastening. A benchmark of language-driven tasks compares frontier VLMs as robot planners.</p>
+    <div class="buttons"><a class="btn small" href="cobot-language/">Write-up</a></div>
+  </div>
+</div>
+
+<h3 class="minor">Earlier projects</h3>
+<div class="entry">
+  <a class="thumb" href="gimbal-lock/"><img src="assets/gimbal/thumb.jpg" alt="Gimbal Lock held in two hands after the competition" loading="lazy"></a>
+  <div>
+    <h3><a href="gimbal-lock/">Gimbal Lock, a Beetleweight Competition Robot</a></h3>
+    <p class="meta">Loughborough University · 2023</p>
+    <p>A 1.5 kg four-wheel-drive robot designed in Fusion 360 for a national university robot competition. It won the inter-university competition and went on to the quarter-finals of the main tournament.</p>
+    <div class="buttons"><a class="btn small" href="gimbal-lock/">Write-up</a></div>
+  </div>
+</div>
+<div class="entry">
+  <a class="thumb" href="pick-and-place/" data-video="assets/previews/pick-and-place.mp4"><img src="assets/pnp/thumb.jpg" alt="The real robot arm holding a yellow block next to blue and red blocks" loading="lazy"></a>
+  <div>
+    <h3><a href="pick-and-place/">Autonomous Pick-and-Place with Custom YOLOv5 Detection in ROS</a></h3>
+    <p class="meta">Team project, Loughborough University · 2023</p>
+    <p>A ROS robot arm that searches its workspace, finds coloured blocks with a YOLOv5 detector trained on our own images, and stacks them. Graded best in the cohort (95%).</p>
+    <div class="buttons"><a class="btn small" href="pick-and-place/">Write-up</a></div>
+  </div>
+</div>
+<ul class="minorlist">
+  <li><b>Localisation rover.</b> A small navigation robot with localisation written in C++. <span class="muted">Loughborough University, 2022</span> · <a href="https://github.com/ar3o/Bessie-Localisation-Rover-">Code</a></li>
+  <li><b>Extended Kalman filter for drone navigation.</b> UAV state estimation in ROS 2 and Gazebo fusing GPS, IMU, magnetometer and sonar, with pure-pursuit waypoint following. <span class="muted">National University of Singapore, 2024</span></li>
+  <li><b>Fuzzy logic control for robotic cardiac ablation.</b> A transparent controller for catheter contact pressure and tissue impedance. <span class="muted">National University of Singapore, 2024</span></li>
+  <li><b>Skin lesion classification.</b> A scikit-learn pipeline in which PCA reduces the features by 99.25% while keeping 95% of the variance. <span class="muted">Nanyang Technological University, 2023</span></li>
+</ul>
+
+<h2>Education</h2>
+<ul class="edu">
+  <li><img src="assets/logos/imperial.svg" alt=""><div><span class="where">MRes Medical Robotics and Image-Guided Intervention, Imperial College London</span><span class="what">Distinction (77.6%) · Department of Surgery &amp; Cancer Scholarship</span></div><span class="when">2025 – 2026</span></li>
+  <li><img src="assets/logos/nus.svg" alt=""><div><span class="where">Exchange year, National University of Singapore and Nanyang Technological University</span><span class="what">Robotics, machine learning and computer vision</span></div><span class="when">2023 – 2024</span></li>
+  <li><img src="assets/logos/loughborough.png" alt=""><div><span class="where">BEng Robotics, Mechatronics and Control Engineering, Loughborough University</span><span class="what">First Class Honours</span></div><span class="when">2021 – 2025</span></li>
+</ul>
+
+<h2>Experience</h2>
+<ul class="exp">
+  <li><span class="where">Humanoid, London</span><span class="when">Nov 2026 – present</span><span class="what">Robot Learning Research Intern, reinforcement learning team</span></li>
+  <li><span class="where">EnAcuity and the Hamlyn Centre, Imperial College London</span><span class="when">Feb 2026 – Nov 2026</span><span class="what">Graduate Researcher, MRes thesis, supervised by Dr Tobias Czempiel and Prof Daniel S. Elson</span></li>
+  <li><span class="where">Bosch ASEAN Corporate Research, Singapore</span><span class="when">May 2024 – Oct 2024</span><span class="what">Robotics Research Engineer Intern, Isaac Sim digital twins of EV component assembly and disassembly</span></li>
+</ul>
+
+<footer>Archie McMurray · <a href="mailto:ajsmcmurray@gmail.com">ajsmcmurray@gmail.com</a> · <a href="https://github.com/ar3o">github.com/ar3o</a></footer>
+
+</main>
+<script>
+document.querySelectorAll('.thumb[data-video]').forEach(function (t) {
+  var v;
+  t.addEventListener('mouseenter', function () {
+    if (!v) {
+      v = document.createElement('video');
+      v.src = t.dataset.video; v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'auto';
+      t.appendChild(v);
+    }
+    v.play().then(function () { t.classList.add('playing'); }).catch(function () {});
+  });
+  t.addEventListener('mouseleave', function () { if (v) { v.pause(); t.classList.remove('playing'); } });
+});
+</script>
+</body>
+</html>

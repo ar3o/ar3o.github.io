@@ -1,128 +1,130 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Surgical Tissue Worlds</title>
-<meta name="description" content="Turning single hyperspectral and RGB surgical frames into editable 3-D scenes for synthetic data and robustness testing.">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editable 3D Scenes from Single Hyperspectral and RGB Surgical Frames</title>
+<meta name="description" content="Single hyperspectral and RGB surgical frames lifted to editable 3D scenes with exact correspondences and labels, for training and testing surgical vision models.">
 <link rel="stylesheet" href="../style.css">
-<style>
-  article figure { margin: 22px 0 28px; }
-  article figure img, article figure video { width: 100%; height: auto; display: block; border-radius: 6px; }
-  article figcaption { color: var(--muted); font-size: 0.88em; margin-top: 8px; line-height: 1.5; }
-  .byline { margin: 6px 0 2px; } .byline + .muted { margin-top: 0; }
-  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .row.two { grid-template-columns: 1fr 1fr; }
-  .row figure { margin: 0; }
-  .row figcaption { text-align: center; margin-top: 4px; }
-  .group { margin: 22px 0 28px; } .group > figcaption { margin-top: 10px; }
-  .narrow { max-width: 720px; margin-left: auto; margin-right: auto; }
-  @media (max-width: 640px) { .row, .row.two { grid-template-columns: 1fr; } }
-</style></head><body><main>
-<nav><a href="../">Archie McMurray</a> / Surgical Tissue Worlds</nav>
-<article>
-<h1>Surgical Tissue Worlds</h1>
-<p class="byline">Single hyperspectral and RGB surgical frames as editable 3-D scenes</p>
-<p class="muted">Archie McMurray · Hamlyn Centre, Imperial College London · supervised by Tobias Czempiel and Daniel S. Elson</p>
+</head>
+<body class="post">
+<main>
+<div class="back"><a href="../">← Archie McMurray</a></div>
 
-<p class="note">MRes thesis (2026), <i>Hyperspectral Tissue Worlds for Synthetic Surgical Data</i>, and follow-on work in preparation for IPCAI 2027. Quantitative results and code will be released with the paper.</p>
+<header>
+  <h1>Editable 3D Scenes from Single Hyperspectral and RGB Surgical Frames</h1>
+</header>
+<p class="facts-line">September 2026 · Hyperspectral imaging, monocular 3D reconstruction, NVIDIA Omniverse</p>
 
-<figure>
-  <img src="assets/hero_mosaic.jpg" alt="Twelve tiles: real porcine open-surgery and laparoscopic hyperspectral frames alongside the 3-D tissue worlds lifted from them, rendered from new viewpoints.">
-  <figcaption>Real hyperspectral acquisitions and the 3-D tissue worlds lifted from them, rendered from viewpoints the camera never occupied.</figcaption>
+<div class="prose">
+
+<figure class="wide">
+  <img src="assets/hero_mosaic.jpg" alt="Real hyperspectral surgical acquisitions and the 3D scenes built from them, rendered from new viewpoints">
+  <figcaption>Real hyperspectral acquisitions and the 3D scenes built from them, rendered from viewpoints the camera never occupied.</figcaption>
 </figure>
 
 <h2>Motivation</h2>
-<p>Surgical hyperspectral imaging resolves tissue composition beyond what RGB cameras capture, but labelled acquisitions are few, and the variation that matters in practice (viewpoint, tissue motion, illumination, wet reflection, physiology) is rarely recorded under control. Conventional augmentation only warps the image in 2-D, generative models need the training data that is missing, and fully simulated scenes offer control but do not look or measure like real tissue.</p>
-<p>This work takes a different route. It lifts a <i>single real frame</i> into a 3-D scene that keeps the measured appearance, and then generates controlled variation around it. Because every rendered pixel is tied to a source pixel, labels and correspondences are known by construction rather than estimated.</p>
+<p>Surgical hyperspectral imaging measures tissue composition beyond what an RGB camera can see, which makes it useful for judging perfusion and telling tissues apart during an operation. The difficulty is data. Labelled acquisitions are few, and the variation that matters in practice, such as viewpoint, tissue motion, illumination, wet reflection and physiology, is rarely recorded under control.</p>
+<p>The usual workarounds each miss something. Standard augmentation warps the image in 2D, so it cannot produce parallax or occlusion. Generative models need the training data that is missing in the first place. Fully simulated scenes give control, but they neither look nor measure like real tissue, so a model trained on them learns the simulator.</p>
+<p>This work takes a different route. A single real frame is lifted into a 3D scene that keeps its measured appearance, and controlled variation is generated around it. Every rendered pixel is tied to a source pixel, so labels and correspondences are known by construction rather than estimated. The question is whether variation built this way is a better source of training and testing data than 2D augmentation.</p>
 
-<h2>From one frame to a 3-D world</h2>
-<p>Specular highlights are detected and repaired across all spectral bands, and spatial shading is removed so that the stored texture reflects the tissue rather than the light source. A monocular geometry model predicts depth and surface normals, and the frame is lifted to a mesh in which every vertex keeps its source coordinates. The measured spectrum and any annotation therefore travel with the surface, and no appearance is synthesised.</p>
-<figure>
-  <img src="assets/pipeline.jpg" alt="Six panels: (a) measured hyperspectral reflectance, (b) the cleaned image and its estimated depth, (c) a novel oblique view, (d) deformation, (e) an illumination change, (f) a local oxygenation edit.">
-  <figcaption>The pipeline: measured reflectance (a) is cleaned and given depth (b), then re-rendered under a new viewpoint (c), deformation (d), illumination (e) and physiological change (f).</figcaption>
+<h2>Single-frame 3D reconstruction</h2>
+<p>The input is a calibrated reflectance cube, either a hyperspectral frame with 16 to 20 bands or an RGB frame. Before it can be lifted to 3D, the frame has to lose the traces of the light that recorded it, because anything left in the texture would move with the tissue in every new view.</p>
+<h3>Removing the original acquisition</h3>
+<p>SAM 3 is prompted with the names of instruments and other non-tissue material, and those pixels are excluded from the tissue surface. Specular highlights are then located with HFA-Net, a highlight detector adapted here to hyperspectral data by sharing one mask across all wavelengths. Its threshold, minimum region size and mask dilation were tuned on renders of cleaned tissue with and without a wet layer, where the true highlight positions are known. The masked regions are filled with LaMa, a neural inpainting model, run on each band separately. Finally, the illumination estimate of Marigold's intrinsic image decomposition is computed on a pseudo-RGB image and applied as one spatial gain to every wavelength, which flattens the scope's light falloff without changing the spectral shape of any pixel.</p>
+<h3>Geometry and correspondence</h3>
+<p>MoGe, a monocular geometry model, predicts a 3D point and a surface normal for every pixel. Neighbouring points are connected into a mesh of the visible surface, and each vertex stores the normalised image coordinate it came from. When a new view is rendered, the visible coordinate at each output pixel is used to sample the original reflectance cube and any label. Every spectrum therefore stays attached to the same surface point as the camera moves, and labels and correspondences are exact by construction. Pixels that reveal tissue hidden in the original frame are marked as invalid rather than filled with invented tissue.</p>
+
+<figure class="wide">
+  <img src="assets/pipeline.jpg" alt="Six panels from measured reflectance to re-rendered views under new viewpoint, deformation, illumination and physiology">
+  <figcaption>Measured reflectance (a) is cleaned and given depth (b), then re-rendered under a new viewpoint (c), deformation (d), illumination (e) and physiological change (f).</figcaption>
 </figure>
 
-<div class="group">
-  <div class="row">
-    <figure><video src="assets/fp_measured.mp4" poster="assets/poster_measured.jpg" autoplay muted loop playsinline></video><figcaption>Measured, planar</figcaption></figure>
-    <figure><video src="assets/fp_cleaned.mp4" poster="assets/poster_cleaned.jpg" autoplay muted loop playsinline></video><figcaption>Cleaned, 3-D</figcaption></figure>
-    <figure><video src="assets/fp_relit.mp4" poster="assets/poster_relit.jpg" autoplay muted loop playsinline></video><figcaption>Cleaned and relit, 3-D</figcaption></figure>
+<figure class="wide">
+  <div class="trio">
+    <div><video src="assets/fp_measured.mp4" poster="assets/poster_measured.jpg" autoplay loop muted playsinline></video><div class="sub">Measured, flat</div></div>
+    <div><video src="assets/fp_cleaned.mp4" poster="assets/poster_cleaned.jpg" autoplay loop muted playsinline></video><div class="sub">Cleaned, 3D</div></div>
+    <div><video src="assets/fp_relit.mp4" poster="assets/poster_relit.jpg" autoplay loop muted playsinline></video><div class="sub">Cleaned and relit, 3D</div></div>
   </div>
-  <figcaption>The same acquisition as a flat image, as a cleaned 3-D surface, and relit. Highlights baked into the measurement do not move with the viewpoint; after repair, reflections are produced by the renderer and behave physically.</figcaption>
-</div>
+  <figcaption>The same acquisition as a flat image, as a cleaned 3D surface, and relit. Highlights baked into the measurement do not move with the viewpoint. After repair, reflections come from the renderer and behave physically.</figcaption>
+</figure>
 
-<figure class="narrow">
-  <video src="assets/labels.mp4" poster="assets/poster_labels.jpg" autoplay muted loop playsinline></video>
+<figure class="half">
+  <video src="assets/labels.mp4" poster="assets/poster_labels.jpg" autoplay loop muted playsinline></video>
   <figcaption>Tissue labels drawn on the source frame stay attached to the same tissue in every rendered view.</figcaption>
 </figure>
 
 <h2>Controlled variation</h2>
-<p>Once a frame is a surface, the factors that are entangled in real data can be varied one at a time while correspondences and labels remain exact.</p>
+<p>Once a frame is a surface, the factors that are entangled in real data can be varied one at a time while correspondences and labels remain exact. Each factor has bounded controls, and domain randomisation samples them with a low-discrepancy Sobol sequence so that new acquisitions cover the control space evenly instead of clustering around the original settings.</p>
 
 <h3>Viewpoint</h3>
-<div class="group">
-  <div class="row two">
-    <figure><img src="assets/viewpoint_rig.jpg" alt="A virtual camera and a separate surgical light positioned above a lifted tissue surface, with the camera frustum and light rays drawn."></figure>
-    <figure><video src="assets/viewpoint.mp4" poster="assets/poster_viewpoint.jpg" autoplay muted loop playsinline></video></figure>
+<p>A virtual endoscope can change its direction, distance, field of view, roll and target point. Camera positions are sampled on the upper hemisphere above the tissue and are kept above the tissue horizon, because a single view contains no surface below it.</p>
+<figure>
+  <div class="pair">
+    <img src="assets/viewpoint_rig.jpg" alt="A virtual endoscope and light source placed around the lifted tissue">
+    <video src="assets/viewpoint.mp4" poster="assets/poster_viewpoint.jpg" autoplay loop muted playsinline></video>
   </div>
   <figcaption>A virtual endoscope and light source placed around the lifted tissue (left), and the resulting fly-around (right).</figcaption>
-</div>
+</figure>
 
 <h3>Deformation</h3>
-<div class="group">
-  <div class="row">
-    <figure><video src="assets/deform1.mp4" poster="assets/poster_def1.jpg" autoplay muted loop playsinline></video></figure>
-    <figure><video src="assets/deform3.mp4" poster="assets/poster_def3.jpg" autoplay muted loop playsinline></video></figure>
-    <figure><video src="assets/deform6.mp4" poster="assets/poster_def6.jpg" autoplay muted loop playsinline></video></figure>
+<p>Tissue motion is modelled with smooth displacement fields applied to the mesh vertices. A vertex at position <i>v</i> moves to <i>v</i>′ = <i>v</i> + <i>aL</i> <b>u</b>(<i>q</i>, φ), where <i>q</i> is its normalised position, <i>a</i> the strength, <i>L</i> the surface size and φ a phase. Bending, twisting, folding and local displacement each use their own field <b>u</b>, for example a Gaussian bump for local displacement. Strength is expressed relative to the surface size because monocular geometry has no metric scale. The material coordinates never change, so every label and spectrum follows the same tissue through the deformation.</p>
+<figure class="wide">
+  <div class="trio">
+    <video src="assets/deform1.mp4" poster="assets/poster_def1.jpg" autoplay loop muted playsinline></video>
+    <video src="assets/deform3.mp4" poster="assets/poster_def3.jpg" autoplay loop muted playsinline></video>
+    <video src="assets/deform6.mp4" poster="assets/poster_def6.jpg" autoplay loop muted playsinline></video>
   </div>
-  <figcaption>Bending, twisting, folding and local displacement applied to different acquisitions. The numbered markers are material points; their ground-truth tracks come directly from the stored source coordinates.</figcaption>
-</div>
+  <figcaption>Bending, twisting, folding and local displacement applied to different acquisitions. The numbered markers are material points, and their ground-truth tracks come directly from the stored source coordinates.</figcaption>
+</figure>
 
 <h3>Illumination and reflection</h3>
-<div class="group">
-  <div class="row">
-    <figure><img src="assets/cond_broad.jpg" alt="Bowel surface under broad, even illumination."><figcaption>Broad illumination</figcaption></figure>
-    <figure><img src="assets/cond_focused.jpg" alt="The same surface under a focused scope light that falls off towards the edges."><figcaption>Focused illumination</figcaption></figure>
-    <figure><img src="assets/cond_wet.jpg" alt="The same surface with a thin wet layer producing specular highlights."><figcaption>Wet reflection</figcaption></figure>
+<p>New acquisitions are rendered with Mitsuba 3, a spectral light-transport renderer. The cleaned reflectance sits beneath a rough dielectric interface that approximates the wet tissue boundary, with its roughness, specular strength and refractive index varied. A variable number of light sources is placed around the camera and aimed at the tissue, like the light ports of an endoscope, and their position, intensity, beam spread and spectral power distribution are sampled. Rendered radiance is divided by the response of a synthetic white reference, so every new view is again a reflectance image.</p>
+<figure class="wide">
+  <div class="trio">
+    <div><img src="assets/cond_broad.jpg" alt="Bowel surface under broad, even illumination"><div class="sub">Broad illumination</div></div>
+    <div><img src="assets/cond_focused.jpg" alt="The same surface under a focused scope light"><div class="sub">Focused illumination</div></div>
+    <div><img src="assets/cond_wet.jpg" alt="The same surface with a thin wet layer"><div class="sub">Wet reflection</div></div>
   </div>
-</div>
+</figure>
 
 <h3>Physiology</h3>
-<p>A three-layer tissue model and a neural reflectance surrogate are used to estimate how the measured spectrum would change with blood volume and oxygen saturation. The change is applied as a relative multiplier on the measured spectrum, either globally or within a chosen region.</p>
-<div class="group">
-  <div class="row">
-    <figure><img src="assets/physio_ref.jpg" alt="Bowel world at its reference oxygenation."><figcaption>Reference</figcaption></figure>
-    <figure><img src="assets/physio_global.jpg" alt="The same world with oxygenation lowered everywhere, giving a darker, bluer appearance."><figcaption>Global desaturation</figcaption></figure>
-    <figure><img src="assets/physio_local.jpg" alt="The same world with oxygenation lowered only inside an outlined region."><figcaption>Local desaturation</figcaption></figure>
+<p>Viewpoint and lighting do not change the tissue itself. To change its physiology, the measured spectra are fitted to a three-layer optical tissue model with 18 parameters, including oxygen saturation shared across layers and the blood volume, scattering, anisotropy, refractive index and thickness of each layer. The forward model is MCMLNet, a neural surrogate of multilayer Monte Carlo light transport, combined with the camera's band responses.</p>
+<p>Fitting every pixel would be slow and unstable, so the tissue pixels are grouped into 128 clusters by spectral similarity and position, and the median spectrum of each cluster is fitted. For each cluster, 32,768 tissue states drawn from a Sobol design are screened, and the four best are refined by gradient descent on a loss that combines relative reflectance error with the spectral angle. Fits are kept only within a spectral angle of 5° and a normalised error of 10%, and every solution close to the best is kept, because different tissue states can produce the same spectrum. An edit, such as lower oxygen saturation inside a chosen region, changes the fitted state, and the ratio between the edited and original model spectra is applied to the measured spectrum. The measured texture is therefore changed only by the modelled physiological difference.</p>
+<figure class="wide">
+  <div class="trio">
+    <div><img src="assets/physio_ref.jpg" alt="Bowel scene at its reference oxygenation"><div class="sub">Reference</div></div>
+    <div><img src="assets/physio_global.jpg" alt="The same scene with oxygenation lowered everywhere"><div class="sub">Global desaturation</div></div>
+    <div><img src="assets/physio_local.jpg" alt="The same scene with oxygenation lowered inside one region"><div class="sub">Local desaturation</div></div>
   </div>
   <figcaption>Oxygenation edits rendered from the edited spectra.</figcaption>
-</div>
-
-<h2>Learning from worlds</h2>
-<p>Rendered views provide supervision that real video cannot: exact sub-pixel correspondences, visibility masks and transported labels. The thesis evaluated the worlds as training data for colon segmentation on held-out animals and for hyperspectral keypoint matching with HyKey. The current work extends the approach to RGB and hyperspectral laparoscopy and uses it in three ways: as pairs for dense self-supervised pretraining before few-label organ segmentation on DSAD, as training pairs for keypoint matchers, and as a validation target by predicting real views of the same scene at known camera poses.</p>
-<p>Every experiment is compared against a <i>matched homography</i>: a planar warp fitted to the same camera motion and covering the same region. Any difference between the two is therefore due to 3-D parallax rather than to the amount or kind of augmentation.</p>
-<figure>
-  <img src="assets/sw_overview.jpg" alt="Overview diagram: a real laparoscopic frame with instruments excluded and its monocular geometry are lifted into a textured 3-D world with source and virtual endoscope cameras. Outputs are training views with correspondences, validation against a real view at a known pose, and edits in Omniverse for light, smoke and instruments.">
-  <figcaption>A single frame becomes a 3-D world with virtual endoscopes, which produces training views with dense correspondences, predictions of real views for validation, and edited scenes for robustness testing.</figcaption>
-</figure>
-<figure>
-  <img src="assets/hykey_pairs.jpg" alt="A measured hyperspectral source image, an independent planar warp, two direct 3-D novel views and two wet, relit 3-D novel views, each with the same coloured keypoints at corresponding locations.">
-  <figcaption>Training pairs for hyperspectral keypoint matching. The planar warp (b) is the standard augmentation; the 3-D views (c–f) add parallax, occlusion and lighting change while keeping the same keypoints in exact correspondence.</figcaption>
 </figure>
 
-<h2>Editing real scenes</h2>
-<p>Worlds are exported as USD scenes and open in an NVIDIA Omniverse extension, where a real acquisition can be inspected from any angle and edited with scope lighting, surgical smoke or inserted instruments. Because the underlying scene is real, these edits give controlled stress tests for trained models on real anatomy rather than on a synthetic proxy.</p>
-<figure>
-  <img src="assets/omniverse.jpg" alt="Screenshot of the Omniverse extension: a real-time render of a hyperspectral bowel world on the left, and a control panel on the right with a spectral preview, a look-around camera control and sections for geometry, lighting, texture and acquisition.">
-  <figcaption>The Omniverse extension with a hyperspectral bowel world.</figcaption>
-</figure>
-<figure>
-  <img src="assets/edits.jpg" alt="Five renders of the same laparoscopic scene: unedited, with scope lighting, with medium smoke, with dense smoke, and with an inserted instrument.">
-  <figcaption>Edits applied to a single real frame: scope lighting, two levels of smoke, and an inserted instrument.</figcaption>
+<h3>Light transport in curved tissue</h3>
+<p>The three-layer model assumes a flat slab lit from above, while real tissue is curved and often lit at a grazing angle. To measure what this assumption misses, photon transport was simulated with mesh-based Monte Carlo in tetrahedral meshes of curved surfaces, including cylinders, spheres and folds, at illumination angles from 30° to 89°. Each curved case was paired with a flat, normally lit reference of the same composition, across 36 wavelengths from 500 to 760 nm. A small network with 304 parameters then learns the change in spectral shape from the affected spectrum and its illumination angle, which can be computed from the surface normal, so that curved views can be corrected towards what the flat model expects.</p>
+
+<h2>Scene editing in Omniverse</h2>
+<p>The scenes are exported as USD and open in an NVIDIA Omniverse extension, where a real acquisition can be inspected from any angle and path traced. Scope lighting, surgical smoke and instrument models can be added, and an instrument can grasp and lift the tissue with finite-element deformation. Because the underlying scene is real, these edits give controlled stress tests for trained models on real anatomy rather than on a synthetic stand-in, and the same scenes can feed Replicator for domain randomisation or Isaac for robot learning.</p>
+
+<figure class="wide">
+  <img src="assets/omniverse.jpg" alt="The Omniverse extension showing a hyperspectral bowel scene">
+  <figcaption>The Omniverse extension with a hyperspectral bowel scene.</figcaption>
 </figure>
 
-<figure>
-  <video src="assets/gallery.mp4" poster="assets/poster_gallery.jpg" autoplay muted loop playsinline></video>
-  <figcaption>Six minimally invasive hyperspectral worlds, each from one acquisition.</figcaption>
+<figure class="wide">
+  <img src="assets/omniverse_pathtraced.jpg" alt="Path-traced Omniverse renders of real laparoscopic frames with new viewpoints, instruments, smoke and tissue deformation">
+  <figcaption>Path-traced Omniverse scenes built from single real frames, shown next to the real frame, with new viewpoints, inserted instruments, smoke and an instrument lifting the tissue.</figcaption>
+</figure>
+
+<figure class="wide">
+  <video src="assets/gallery.mp4" poster="assets/poster_gallery.jpg" autoplay loop muted playsinline></video>
+  <figcaption>Six minimally invasive hyperspectral scenes, each built from one acquisition.</figcaption>
 </figure>
 
 <h2>Data</h2>
-<p>Porcine open-surgery hyperspectral acquisitions (HeiPorSPECTRAL, Xeno-learning), human minimally invasive hyperspectral data from Enacuity, the HyKey hyperspectral matching data, and RGB laparoscopy from DSAD, StereoMIS, STIR and SERV-CT.</p>
-</article></main></body></html>
+<p>The work uses porcine open-surgery hyperspectral acquisitions (HeiPorSPECTRAL and Xeno-learning), human minimally invasive hyperspectral data from EnAcuity, the HyKey hyperspectral matching data, and RGB laparoscopy from DSAD, StereoMIS, STIR and SERV-CT.</p>
+
+</div>
+</main>
+</body>
+</html>

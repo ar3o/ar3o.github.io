@@ -1,80 +1,91 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Autonomous Endoscope Navigation</title>
-<meta name="description" content="Depth estimation and reinforcement-learned navigation for monocular colonoscopy, trained on synthetic colons.">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reinforcement Learning for Autonomous Endoscope Navigation from Monocular Depth</title>
+<meta name="description" content="Depth estimation and reinforcement-learned navigation for monocular colonoscopy, trained on synthetic colons in Isaac Lab.">
 <link rel="stylesheet" href="../style.css">
-<style>
-  article figure { margin: 22px 0 28px; }
-  article figure img, article figure video { width: 100%; height: auto; display: block; border-radius: 6px; }
-  article figcaption { color: var(--muted); font-size: 0.88em; margin-top: 8px; line-height: 1.5; }
-  .byline { margin: 6px 0 2px; } .byline + .muted { margin-top: 0; }
-  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .row.two { grid-template-columns: 1fr 1fr; }
-  .row figure { margin: 0; }
-  .row figcaption { text-align: center; margin-top: 4px; }
-  .group { margin: 22px 0 28px; } .group > figcaption { margin-top: 10px; }
-  .narrow { max-width: 720px; margin-left: auto; margin-right: auto; }
-  .small { max-width: 480px; margin-left: auto; margin-right: auto; }
-  @media (max-width: 640px) { .row, .row.two { grid-template-columns: 1fr; } }
-</style></head><body><main>
-<nav><a href="../">Archie McMurray</a> / Autonomous Endoscope Navigation</nav>
-<article>
-<h1>Autonomous Endoscope Navigation</h1>
-<p class="byline">Depth estimation and reinforcement-learned navigation in monocular colonoscopy</p>
-<p class="muted">Archie McMurray · MRes Medical Robotics and Image-Guided Intervention, Imperial College London · 2025</p>
+</head>
+<body class="post">
+<main>
+<div class="back"><a href="../">← Archie McMurray</a></div>
 
-<figure class="small">
-  <img src="assets/rollout.gif" alt="First-person view from a virtual endoscope moving through a rendered colon, keeping the dark lumen near the centre.">
-  <figcaption>The learned policy steering through a colon it never saw in training, from the endoscope camera.</figcaption>
+<header>
+  <h1>Reinforcement Learning for Autonomous Endoscope Navigation from Monocular Depth</h1>
+</header>
+<p class="facts-line">December 2025 · Isaac Lab, Depth Anything V2, PPO</p>
+
+<div class="prose">
+
+<figure class="square">
+  <video src="assets/rollout_square.mp4" autoplay loop muted playsinline poster="assets/dr_render.jpg"></video>
+  <figcaption>The learned policy steering through a colon it never saw in training, seen from the endoscope camera.</figcaption>
 </figure>
 
 <h2>Motivation</h2>
-<p>Colorectal cancer is the second leading cause of cancer death in the UK and worldwide, and colonoscopy is how it is caught early. Steering a scope through a soft, folded colon from a single camera is hard to learn and hard to automate: real datasets are small and come without ground-truth depth, and rigid-body SLAM assumptions break down on deforming tissue. The project aimed to give a soft robotic endoscope depth-aware navigation commands from monocular video alone.</p>
+<p>Colorectal cancer is the second leading cause of cancer death in the UK and worldwide, and colonoscopy is how it is caught early. The procedure depends on the operator steering a long, flexible scope through a soft and folded colon while watching a single camera. It takes many procedures to learn, it is uncomfortable for the patient when it goes badly, and the quality of the examination varies with experience.</p>
+<p>Soft robotic endoscopes could take some of that burden away, but they need to know where to go. That is hard to learn from real data. Recorded colonoscopies are few, they come without ground-truth depth, and the methods that work well in rigid scenes, such as SLAM, assume a world that does not deform. A policy trained directly on real video would have very little to learn from and no reliable way to be scored.</p>
+<p>This project took the opposite route and trained everything in simulation. Synthetic colons give unlimited data with exact depth and centrelines, and reinforcement learning can practise thousands of runs without a patient. The aim was to turn monocular video into depth-aware steering commands, and to see how far a policy trained only on synthetic anatomy could go on anatomy it had never seen.</p>
 
-<h2>Synthetic colons</h2>
-<p>Ground-truth colon meshes from C3VD were cleaned and reconstructed in Blender and MeshLab, and centrelines were extracted in 3D Slicer. Noise on the geometry produces endless new lumen shapes, and procedural texture, roughness and normal maps vary the appearance. Rendering these in simulation with varied camera intrinsics, including fisheye, gives paired RGB and depth datasets.</p>
-<div class="group">
-  <div class="row">
-    <figure><img src="assets/dr_geometry.jpg" alt="Grey colon mesh with green regions showing where noise has displaced the geometry."><figcaption>Geometry randomisation</figcaption></figure>
-    <figure><img src="assets/dr_texture.jpg" alt="Colon mesh covered in a procedurally generated red-brown tissue texture."><figcaption>Texture generation</figcaption></figure>
-    <figure><img src="assets/dr_render.jpg" alt="Rendered view down a textured colon lumen."><figcaption>Rendered view</figcaption></figure>
+<h2>Synthetic colon generation</h2>
+<p>Ground-truth colon meshes from C3VD were cleaned and reconstructed in Blender and MeshLab, and their centrelines were extracted in 3D Slicer. Noise applied to the geometry produces new lumen shapes without limit, and procedural texture, roughness and normal maps vary the appearance. Rendering these with varied camera intrinsics, including fisheye, gives paired RGB and depth datasets of more than 20,000 frames.</p>
+
+<figure class="wide">
+  <div class="trio">
+    <div><img src="assets/dr_geometry.jpg" alt="Grey colon mesh with green regions where noise has deformed it"><div class="sub">Geometry randomisation</div></div>
+    <div><img src="assets/dr_texture.jpg" alt="Colon mesh with a procedurally generated tissue texture"><div class="sub">Texture generation</div></div>
+    <div><img src="assets/dr_render.jpg" alt="Rendered view down a textured colon lumen"><div class="sub">Rendered view</div></div>
   </div>
   <figcaption>Domain randomisation of shape and appearance.</figcaption>
-</div>
-<figure class="narrow">
-  <img src="assets/centreline.jpg" alt="A full colon model in yellow with its extracted centreline drawn through it.">
+</figure>
+
+<figure class="half">
+  <img src="assets/centreline.jpg" alt="A full colon model with its extracted centreline">
   <figcaption>A colon model with its extracted centreline, used for rewards and for measuring trajectory error.</figcaption>
 </figure>
 
-<h2>Depth from one camera</h2>
-<p>Depth Anything V2 was chosen as the base model, as it held up better than alternatives such as Marigold on complex scenes. It was adapted to endoscopy with parameter-efficient fine-tuning rather than full fine-tuning, which avoids overfitting the small dataset. LoRA was compared with ConvPass, an adapter that restores the image grid before applying convolutions and so keeps the spatial structure that vision transformers otherwise discard.</p>
-<figure class="narrow">
-  <img src="assets/rgb_depth.jpg" alt="Side by side: a simulated pink endoscopic RGB frame and its Depth Anything V2 depth map in rainbow colours, each with an arrow towards the deepest point.">
+<h2>Monocular depth estimation</h2>
+<p>Depth Anything V2 was chosen as the base model because it held up better than alternatives such as Marigold on complex scenes. It was adapted to endoscopy with parameter-efficient fine-tuning rather than full fine-tuning, which avoids overfitting a small dataset. LoRA was compared with ConvPass, an adapter that restores the image grid before applying convolutions and so keeps the spatial structure that vision transformers otherwise discard.</p>
+
+<figure>
+  <img src="assets/rgb_depth.jpg" alt="A simulated endoscopic RGB frame and its predicted depth map">
   <figcaption>Simulated RGB and predicted depth. The arrow points towards the lumen, where the depth is greatest.</figcaption>
 </figure>
 
-<h2>Learning to navigate</h2>
-<p>A PPO actor-critic in Isaac Lab receives visual features and proprioception and outputs velocity and steering commands to a continuous controller. Rewards favour progress along the colon, staying near the centreline and smooth motion (low jerk). Training ran 32 environments in parallel across five colons, with random start positions and orientations.</p>
-<figure>
-  <img src="assets/system.jpg" alt="System diagram: a simulation environment with domain-randomised colons produces RGB images, which a perception model turns into a depth map and a ResNet depth encoder turns into visual features; these and proprioception form the state for a PPO actor-critic, whose action vector goes to a continuous controller that moves the endoscope, with physics data feeding a reward engine.">
-  <figcaption>Simulation, perception and RL training loop.</figcaption>
+<h2>Navigation policy</h2>
+<p>A PPO actor-critic in Isaac Lab receives visual features and proprioception and outputs velocity and steering commands to a continuous controller. The reward favours progress along the colon, staying near the centreline and smooth motion with low jerk. Training ran 32 environments in parallel across five colons, with random start positions and orientations.</p>
+
+<figure class="wide">
+  <img src="assets/system.jpg" alt="System diagram of the simulation, perception and reinforcement learning loop">
+  <figcaption>The simulation, perception and reinforcement learning loop.</figcaption>
 </figure>
-<p>Training straight from 392×392 depth maps (153,664 values) was slow, so an autoencoder trained on ground-truth depth compresses each map to 256 features, a 99.8% reduction. That encoder did not transfer to predicted depth, so instead of retraining the policy, a new encoder was distilled to reproduce the old encoder's features from predicted depth.</p>
-<figure>
-  <img src="assets/distillation.jpg" alt="Diagram: an input RGB frame gives ground-truth depth and predicted depth; the old CNN encodes ground truth as a teacher, and a new student CNN encodes the predicted depth and is trained to match the teacher with an MSE loss.">
+
+<p>Training straight from 392 × 392 depth maps (153,664 values each) was slow, so an autoencoder trained on ground-truth depth compresses each map to 256 features, a 99.8% reduction. That encoder did not transfer to predicted depth. Instead of retraining the policy, a new encoder was distilled to reproduce the original encoder's features from predicted depth, so the existing policy runs unchanged.</p>
+
+<figure class="wide">
+  <img src="assets/distillation.jpg" alt="Diagram of feature distillation from ground-truth depth to predicted depth">
   <figcaption>Feature distillation lets the existing policy run on predicted depth without retraining.</figcaption>
 </figure>
 
 <h2>Results</h2>
-<p>On a held-out colon the policy reached the end in every run, with smoother motion than earlier work, and kept that performance when the camera intrinsics changed.</p>
-<table>
-  <tr><th>Method</th><th>Absolute trajectory error (mm)</th></tr>
-  <tr><td><b>Ours (depth + RL)</b></td><td><b>2.88</b></td></tr>
-  <tr><td>CudaSIFT-SLAM</td><td>3.09</td></tr>
-  <tr><td>HI-PPO (2024)</td><td>8.02</td></tr>
-  <tr><td>Expert human</td><td>8.03</td></tr>
-</table>
-<p class="muted">Comparison figures are as reported in the cited work, not on a shared benchmark.</p>
+<p>On a held-out colon the policy reached the end in every run, with smoother motion than earlier work, and it kept that performance when the camera intrinsics changed.</p>
 
-<h2>Reflection</h2>
-<p>Synthetic RGB does not capture real specularities and fluids, so training directly on RGB overfits to simulation artefacts. Driving the policy from depth makes it depend on geometry, which transfers better, at the cost of separating perception from navigation and hiding some real-world visual noise from the policy. The next steps are testing on deformable colons and on a standard benchmark.</p>
-</article></main></body></html>
+<table>
+  <thead><tr><th>Method</th><th class="num">Absolute trajectory error (mm)</th></tr></thead>
+  <tbody>
+    <tr><td>Depth and RL (this work)</td><td class="num">2.88</td></tr>
+    <tr><td>CudaSIFT-SLAM</td><td class="num">3.09</td></tr>
+    <tr><td>HI-PPO (2024)</td><td class="num">8.02</td></tr>
+    <tr><td>Expert human</td><td class="num">8.03</td></tr>
+  </tbody>
+  <caption>Comparison figures are as reported in the cited work, not measured on a shared benchmark.</caption>
+</table>
+
+<h2>Discussion</h2>
+<p>Synthetic RGB does not capture real specular highlights and fluids, so a policy trained directly on RGB overfits to simulation artefacts. Driving the policy from depth makes it depend on geometry, which transfers better. The cost is that perception and navigation are separated, and some of the visual noise of real procedures never reaches the policy. The next steps are testing on deformable colons and on a standard benchmark.</p>
+
+</div>
+</main>
+</body>
+</html>
